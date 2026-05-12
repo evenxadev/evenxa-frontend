@@ -1,4 +1,5 @@
 import { HomePage } from "../../pages/home";
+import { EventDetailPage } from "../../pages/event-detail";
 import { LoginPage } from "../../pages/login";
 import { RegisterPage } from "../../pages/register";
 import { routes } from "./routes";
@@ -12,6 +13,12 @@ export function AppRouter() {
 
     if (pathname === routes.register) {
         return <RegisterPage />;
+    }
+
+    if (pathname.startsWith(`${routes.eventDetailBase}/`)) {
+        const eventId = decodeURIComponent(pathname.replace(`${routes.eventDetailBase}/`, ""));
+
+        return <EventDetailPage eventId={eventId} />;
     }
 
     return <HomePage />;
