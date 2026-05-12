@@ -1,0 +1,211 @@
+import { useEffect, useRef, useState } from "react";
+import { routes } from "../../app/router/routes";
+import { getEventById } from "../../entities/event/model/getEventById";
+import styles from "./event-detail.module.css";
+
+type Props = {
+    eventId: string;
+};
+
+const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("es-MX", {
+        style: "currency",
+        currency: "MXN",
+        maximumFractionDigits: 0,
+    }).format(price);
+};
+
+export function EventDetailPage({ eventId }: Props) {
+    const event = getEventById(eventId);
+    const buyBoxTriggerRef = useRef<HTMLDivElement>(null);
+    const [isBuyBoxCompact, setIsBuyBoxCompact] = useState(false);
+
+    useEffect(() => {
+        const updateBuyBoxState = () => {
+            const trigger = buyBoxTriggerRef.current;
+
+            if (!trigger || window.innerWidth <= 900) {
+                setIsBuyBoxCompact(false);
+                return;
+            }
+
+            setIsBuyBoxCompact(trigger.getBoundingClientRect().top <= 84);
+        };
+
+        updateBuyBoxState();
+        window.addEventListener("scroll", updateBuyBoxState, { passive: true });
+        window.addEventListener("resize", updateBuyBoxState);
+
+        return () => {
+            window.removeEventListener("scroll", updateBuyBoxState);
+            window.removeEventListener("resize", updateBuyBoxState);
+        };
+    }, [eventId]);
+
+    if (!event) {
+        return (
+            <main className={styles.notFound}>
+                <span>Evento no encontrado</span>
+                <h1>No encontramos este evento.</h1>
+                <p>Puede que el enlace haya cambiado o que el evento ya no este disponible.</p>
+                <a href={routes.home}>Volver a eventos</a>
+            </main>
+        );
+    }
+
+    const availableTickets = event.ticketTiers.filter((ticket) => ticket.available);
+    const primaryTicket = availableTickets[0] ?? event.ticketTiers[0];
+
+    return (
+        <main className={styles.page}>
+            <section className={styles.hero}>
+                <img src={event.image} alt={event.title} className={styles.heroImage} />
+                <div className={styles.heroOverlay} />
+
+                <div className={styles.heroContent}>
+                    <a href={routes.home} className={styles.backLink}>Volver</a>
+
+                    <div className={styles.titleGroup}>
+                        <span className={styles.kicker}>{event.category}</span>
+                        <h1>{event.title}</h1>
+                        <p>{event.subtitle}</p>
+                    </div>
+
+                    <div className={styles.heroMeta} aria-label="Informacion principal del evento">
+                        <div>
+                            <span>Fecha</span>
+                            <strong>{event.date}</strong>
+                        </div>
+                        <div>
+                            <span>Hora</span>
+                            <strong>{event.time}</strong>
+                        </div>
+                        <div>
+                            <span>Ciudad</span>
+                            <strong>{event.location}</strong>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className={styles.content}>
+                <aside className={styles.sidebar}>
+                    <div ref={buyBoxTriggerRef} className={styles.buyBoxTrigger} />
+
+                    <section className={`${styles.buyBox} ${isBuyBoxCompact ? styles.buyBoxCompact : ""}`}>
+                        <div className={styles.buyIntro}>
+                            <span className={styles.eyebrow}>Desde</span>
+                            <strong className={styles.price}>{formatPrice(event.price)}</strong>
+                            <p>{primaryTicket.description}</p>
+                        </div>
+
+                        <div className={styles.eventFacts} aria-label="Fecha, hora y ubicacion del evento">
+                            <div>
+                                <span>Fecha</span>
+                                <strong>{event.date}</strong>
+                            </div>
+                            <div>
+                                <span>Hora</span>
+                                <strong>{event.time}</strong>
+                            </div>
+                            <div>
+                                <span>Lugar</span>
+                                <strong>{event.venueName}</strong>
+                                <p>{event.address}</p>
+                                <p>{event.city}</p>
+                            </div>
+                        </div>
+
+                        <div className={styles.buyAction}>
+                            <button type="button" className={styles.cta} disabled={event.status === "sold-out"}>
+                                {event.status === "sold-out" ? "Agotado" : "Comprar boletos"}
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className={styles.sideBlock}>
+                        <h2>Boletos</h2>
+                        <div className={styles.tickets}>
+                            {event.ticketTiers.map((ticket) => (
+                                <div key={ticket.id} className={styles.ticket}>
+                                    <div>
+                                        <strong>{ticket.name}</strong>
+                                        <p>{ticket.description}</p>
+                                    </div>
+                                    <span>{ticket.available ? formatPrice(ticket.price) : "Agotado"}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className={styles.sideBlock}>
+                        <h2>Resumen</h2>
+                        <div className={styles.summary}>
+                            <div>
+                                <span className={styles.eyebrow}>Organiza</span>
+                                <strong>{event.organizer}</strong>
+                            </div>
+                            <div>
+                                <span className={styles.eyebrow}>Cupo</span>
+                                <strong>{event.capacity} personas</strong>
+                            </div>
+                            <div>
+                                <span className={styles.eyebrow}>Estado</span>
+                                <strong>{event.status === "available" ? "Disponible" : event.status === "soon" ? "Proximamente" : "Agotado"}</strong>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className={styles.sideBlock}>
+                        <h2>Importante</h2>
+                        <ul className={styles.policies}>
+                            {event.policies.map((policy) => (
+                                <li key={policy}>{policy}</li>
+                            ))}
+                        </ul>
+                    </section>
+
+                    <div className={styles.tags}>
+                        {event.tags.map((tag) => (
+                            <span key={tag}>{tag}</span>
+                        ))}
+                    </div>
+                </aside>
+
+                <article className={styles.mainInfo}>
+                    <section className={styles.block}>
+                        <h2>Sobre el evento</h2>
+                        <p>{event.description}</p>
+                    </section>
+
+                    <section className={styles.block}>
+                        <h2>Lo que incluye</h2>
+                        <div className={styles.highlights}>
+                            {event.highlights.map((highlight) => (
+                                <div key={highlight} className={styles.highlight}>
+                                    <span />
+                                    <p>{highlight}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section className={styles.block}>
+                        <h2>Agenda</h2>
+                        <div className={styles.timeline}>
+                            {event.schedule.map((item) => (
+                                <div key={`${item.time}-${item.label}`} className={styles.timelineItem}>
+                                    <time>{item.time}</time>
+                                    <div>
+                                        <strong>{item.label}</strong>
+                                        <p>{item.description}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                </article>
+            </section>
+        </main>
+    );
+}

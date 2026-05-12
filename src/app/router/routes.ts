@@ -5,4 +5,6 @@ export const routes = {
     app: "/app",
     login: "/login",
     register: "/registro",
+    eventDetailBase: "/eventos",
+    eventDetail: (eventId: string) => `/eventos/${eventId}`,
 } as const;
