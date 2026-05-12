@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from "./header.module.css";
 
 import logo from "../../../shared/assets/images/logo/logo-combinado.png";
+import { routes } from "../../../app/router/routes";
 
 export const Header = () => {
     const [open, setOpen] = useState(false);
@@ -10,13 +11,16 @@ export const Header = () => {
         <header className={styles.header}>
             <div className={styles.container}>
                 {/* Logo */}
-                <img src={logo} alt="Evenxa logo" className={styles.logo} />
+                <a href={routes.home} className={styles.logoLink}>
+                    <img src={logo} alt="Evenxa logo" className={styles.logo} />
+                </a>
 
                 {/* Desktop nav */}
                 <nav className={styles.navDesktop}>
-                    <a href="#">Eventos</a>
-                    <a href="#">Explorar</a>
-                    <button className={styles.cta}>Ver eventos</button>
+                    <a href={routes.home}>Eventos</a>
+                    <a href={routes.home}>Explorar</a>
+                    <a className={styles.loginLink} href={routes.login}>Iniciar sesion</a>
+                    <a className={styles.cta} href={routes.register}>Registrarse</a>
                 </nav>
 
                 {/* Mobile menu button */}
@@ -31,9 +35,10 @@ export const Header = () => {
             {/* Mobile menu */}
             {open && (
                 <div className={styles.mobileMenu}>
-                    <a href="#">Eventos</a>
-                    <a href="#">Explorar</a>
-                    <button className={styles.cta}>Ver eventos</button>
+                    <a href={routes.home}>Eventos</a>
+                    <a href={routes.home}>Explorar</a>
+                    <a href={routes.login}>Iniciar sesion</a>
+                    <a className={styles.cta} href={routes.register}>Registrarse</a>
                 </div>
             )}
         </header>
