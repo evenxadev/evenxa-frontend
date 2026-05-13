@@ -1,6 +1,7 @@
 //Para que aparezca el landing, se comenta el router y se importa el landing, luego se descomenta el router y se comenta el landing
 
 import { Header } from "../widgets/header/ui/header";
+import { Footer } from "../widgets/footer";
 //import { LandingPage } from "../pages/landing";
 import { AppProviders } from "./providers";
 import { AppRouter } from "./router";
@@ -22,6 +23,7 @@ export function App() {
                 <AppRouter />
             </AppProviders>
 
+            <Footer />
         </>
     );
 }
