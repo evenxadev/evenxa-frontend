@@ -1,4 +1,5 @@
 import { HomePage } from "../../pages/home";
+import { EventsPage } from "../../pages/events";
 import { EventDetailPage } from "../../pages/event-detail";
 import { CheckoutPage } from "../../pages/checkout";
 import { LoginPage } from "../../pages/login";
@@ -14,6 +15,10 @@ export function AppRouter() {
 
     if (pathname === routes.register) {
         return <RegisterPage />;
+    }
+
+    if (pathname === routes.events) {
+        return <EventsPage />;
     }
 
     if (pathname.startsWith(`${routes.eventDetailBase}/`) && pathname.endsWith("/comprar")) {

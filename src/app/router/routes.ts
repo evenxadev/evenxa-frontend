@@ -3,6 +3,7 @@
 export const routes = {
     home: "/",
     app: "/app",
+    events: "/eventos",
     login: "/login",
     register: "/registro",
     eventDetailBase: "/eventos",

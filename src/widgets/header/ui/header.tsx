@@ -17,7 +17,7 @@ export const Header = () => {
 
                 {/* Desktop nav */}
                 <nav className={styles.navDesktop}>
-                    <a href={routes.home}>Eventos</a>
+                    <a href={routes.events}>Eventos</a>
                     <a href={routes.home}>Explorar</a>
                     <a className={styles.loginLink} href={routes.login}>Iniciar sesion</a>
                     <a className={styles.cta} href={routes.register}>Registrarse</a>
@@ -35,7 +35,7 @@ export const Header = () => {
             {/* Mobile menu */}
             {open && (
                 <div className={styles.mobileMenu}>
-                    <a href={routes.home}>Eventos</a>
+                    <a href={routes.events}>Eventos</a>
                     <a href={routes.home}>Explorar</a>
                     <a href={routes.login}>Iniciar sesion</a>
                     <a className={styles.cta} href={routes.register}>Registrarse</a>

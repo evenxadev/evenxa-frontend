@@ -57,7 +57,7 @@ export function Footer() {
 
                 <nav className={styles.column} aria-label="Navegacion secundaria">
                     <h2>Evenxa</h2>
-                    <a href={routes.home}>Eventos</a>
+                    <a href={routes.events}>Eventos</a>
                     <a href={routes.home}>Explorar</a>
                     <a href={routes.login}>Iniciar sesion</a>
                     <a href={routes.register}>Registrarse</a>
