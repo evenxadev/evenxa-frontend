@@ -4,6 +4,7 @@ import { EventsPage } from "../../pages/events";
 import { EventDetailPage } from "../../pages/event-detail";
 import { CheckoutPage } from "../../pages/checkout";
 import { LoginPage } from "../../pages/login";
+import { MyTicketsPage } from "../../pages/my-tickets";
 import { RegisterPage } from "../../pages/register";
 import { routes } from "./routes";
 
@@ -24,6 +25,10 @@ export function AppRouter() {
 
     if (pathname === routes.categories) {
         return <CategoriesPage />;
+    }
+
+    if (pathname === routes.myTickets) {
+        return <MyTicketsPage />;
     }
 
     if (pathname.startsWith(`${routes.categoryDetailBase}/`)) {
