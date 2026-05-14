@@ -5,6 +5,7 @@ export const routes = {
     app: "/app",
     events: "/eventos",
     categories: "/categorias",
+    myTickets: "/mis-boletos",
     categoryDetailBase: "/categorias",
     categoryDetail: (categoryId: string) => `/categorias/${categoryId}`,
     login: "/login",

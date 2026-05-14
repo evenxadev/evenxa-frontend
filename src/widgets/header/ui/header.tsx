@@ -7,6 +7,7 @@ const navLinks = [
     { label: "Inicio", href: routes.home },
     { label: "Eventos", href: routes.events },
     { label: "Categorias", href: routes.categories },
+    { label: "Mis boletos", href: routes.myTickets },
 ];
 
 export const Header = () => {
