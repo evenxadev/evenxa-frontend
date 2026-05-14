@@ -29,6 +29,16 @@ export function LoginPage() {
 
     return (
         <main className={styles.page}>
+            {isLoading && (
+                <div className={styles.loadingOverlay} role="status" aria-live="polite" aria-label="Cargando perfil">
+                    <div className={styles.loadingDialog}>
+                        <span className={styles.spinner} aria-hidden="true" />
+                        <strong>Cargando perfil</strong>
+                        <p>Estamos validando tu cuenta y preparando tu sesion.</p>
+                    </div>
+                </div>
+            )}
+
             <section className={styles.shell}>
                 <aside className={styles.media}>
                     <img src={heroImage} alt="Concierto Evenxa" className={styles.mediaImage} />
