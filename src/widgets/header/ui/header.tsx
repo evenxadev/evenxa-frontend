@@ -9,7 +9,11 @@ const navLinks = [
     { label: "Inicio", href: routes.home },
     { label: "Eventos", href: routes.events },
     { label: "Categorias", href: routes.categories },
+];
+
+const authNavLinks = [
     { label: "Mis boletos", href: routes.myTickets },
+    { label: "Perfil", href: routes.profile },
 ];
 
 export const Header = () => {
@@ -18,6 +22,7 @@ export const Header = () => {
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const pathname = window.location.pathname;
     const isAuthenticated = Boolean(session?.accessToken);
+    const visibleNavLinks = isAuthenticated ? [...navLinks, ...authNavLinks] : navLinks;
 
     const isActive = (href: string) => {
         if (href === routes.home) {
@@ -52,7 +57,7 @@ export const Header = () => {
                 </a>
 
                 <nav className={styles.navDesktop} aria-label="Navegacion principal">
-                    {navLinks.map((link) => (
+                    {visibleNavLinks.map((link) => (
                         <a
                             href={link.href}
                             className={isActive(link.href) ? styles.activeLink : ""}
@@ -97,7 +102,7 @@ export const Header = () => {
 
             {open && (
                 <div id="main-mobile-menu" className={styles.mobileMenu}>
-                    {navLinks.map((link) => (
+                    {visibleNavLinks.map((link) => (
                         <a
                             href={link.href}
                             className={isActive(link.href) ? styles.activeLink : ""}

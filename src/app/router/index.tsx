@@ -5,6 +5,7 @@ import { EventDetailPage } from "../../pages/event-detail";
 import { CheckoutPage } from "../../pages/checkout";
 import { LoginPage } from "../../pages/login";
 import { MyTicketsPage } from "../../pages/my-tickets";
+import { ProfilePage } from "../../pages/profile";
 import { RegisterPage } from "../../pages/register";
 import { routes } from "./routes";
 
@@ -29,6 +30,10 @@ export function AppRouter() {
 
     if (pathname === routes.myTickets) {
         return <MyTicketsPage />;
+    }
+
+    if (pathname === routes.profile || pathname === routes.editProfile) {
+        return <ProfilePage mode={pathname === routes.editProfile ? "edit" : "view"} />;
     }
 
     if (pathname.startsWith(`${routes.categoryDetailBase}/`)) {
