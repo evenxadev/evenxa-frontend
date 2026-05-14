@@ -6,6 +6,7 @@ export const routes = {
     events: "/eventos",
     categories: "/categorias",
     myTickets: "/mis-boletos",
+    profile: "/perfil",
     categoryDetailBase: "/categorias",
     categoryDetail: (categoryId: string) => `/categorias/${categoryId}`,
     login: "/login",
