@@ -62,6 +62,10 @@ export function LoginPage() {
                     <AuthForm mode="login" onSubmit={handleLogin} isLoading={isLoading} />
 
                     <p className={styles.switch}>
+                        Olvidaste tu contrasena? <a href={routes.recoverPassword}>Recuperala aqui</a>
+                    </p>
+
+                    <p className={styles.switch}>
                         Aun no tienes cuenta? <a href={routes.register}>Registrate</a>
                     </p>
                 </section>

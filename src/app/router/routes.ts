@@ -13,6 +13,7 @@ export const routes = {
     categoryDetailBase: "/categorias",
     categoryDetail: (categoryId: string) => `/categorias/${categoryId}`,
     login: "/login",
+    recoverPassword: "/recuperar-password",
     register: "/registro",
     eventDetailBase: "/eventos",
     eventDetail: (eventId: string) => `/eventos/${eventId}`,

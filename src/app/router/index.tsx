@@ -9,6 +9,7 @@ import { CheckoutPage } from "../../pages/checkout";
 import { LoginPage } from "../../pages/login";
 import { MyTicketsPage } from "../../pages/my-tickets";
 import { ProfilePage } from "../../pages/profile";
+import { RecoverPasswordPage } from "../../pages/recover-password";
 import { RegisterPage } from "../../pages/register";
 import { getRoleHomePath, getSessionRole, getStoredSession, type UserRole } from "../../entities/session";
 import { routes } from "./routes";
@@ -40,6 +41,10 @@ export function AppRouter() {
 
     if (pathname === routes.login) {
         return <LoginPage />;
+    }
+
+    if (pathname === routes.recoverPassword) {
+        return <RecoverPasswordPage />;
     }
 
     if (pathname === routes.register) {
