@@ -1,50 +1,91 @@
+import { useEffect, useState } from "react";
 import { routes } from "../../app/router/routes";
-import { getStoredSession } from "../../entities/session";
+import { getStoredSession, type SessionUser } from "../../entities/session";
+import { profileApi } from "../../features/profile/api";
 import styles from "./profile.module.css";
 
 type Props = {
     mode?: "view" | "edit";
 };
 
-const mockProfile = {
-    email: "usuario@evenxa.com",
-    nombre: "Leonardo",
-    apellido_paterno: "Lopez",
-    apellido_materno: "Osornio",
-    telefono: "4191187944",
-    tipo_usuario: "Usuario",
-};
-
-const profileStats = [
-    { label: "Boletos activos", value: "2" },
-    { label: "Eventos asistidos", value: "8" },
-    { label: "Compras", value: "12" },
-];
-
-const preferences = ["Musica en vivo", "Festivales", "Experiencias urbanas", "Comedia"];
-
 export function ProfilePage({ mode = "view" }: Props) {
-    const session = getStoredSession();
+    const [profile, setProfile] = useState<SessionUser | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState("");
     const isEditing = mode === "edit";
-    const user = session?.user;
-    const displayName = [user?.nombre, user?.apellido_paterno, user?.apellido_materno]
+
+    useEffect(() => {
+        const session = getStoredSession();
+
+        if (!session?.accessToken) {
+            setError("Inicia sesion para ver tu perfil.");
+            setIsLoading(false);
+            return;
+        }
+
+        let isMounted = true;
+
+        profileApi.getProfile(session.accessToken)
+            .then((userProfile) => {
+                if (isMounted) {
+                    setProfile(userProfile);
+                }
+            })
+            .catch((requestError) => {
+                if (isMounted) {
+                    const message = requestError instanceof Error ? requestError.message : "No pudimos cargar tu perfil.";
+                    setError(message);
+                }
+            })
+            .finally(() => {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    if (isLoading) {
+        return (
+            <main className={styles.page}>
+                <section className={styles.hero}>
+                    <div>
+                        <span className={styles.eyebrow}>Mi perfil</span>
+                        <h1>Cargando perfil</h1>
+                        <p>Estamos consultando tus datos de cuenta.</p>
+                    </div>
+                </section>
+            </main>
+        );
+    }
+
+    if (error || !profile) {
+        return (
+            <main className={styles.page}>
+                <section className={styles.hero}>
+                    <div>
+                        <span className={styles.eyebrow}>Mi perfil</span>
+                        <h1>No pudimos cargar tu perfil</h1>
+                        <p>{error || "Intenta iniciar sesion nuevamente."}</p>
+                    </div>
+                    <a className={styles.primaryAction} href={routes.login}>Iniciar sesion</a>
+                </section>
+            </main>
+        );
+    }
+
+    const displayName = [profile.nombre, profile.apellido_paterno, profile.apellido_materno]
         .filter(Boolean)
-        .join(" ") || `${mockProfile.nombre} ${mockProfile.apellido_paterno}`;
+        .join(" ") || profile.email;
     const initials = displayName
         .split(" ")
         .slice(0, 2)
         .map((part) => part[0])
         .join("")
         .toUpperCase();
-
-    const profile = {
-        email: user?.email ?? mockProfile.email,
-        nombre: user?.nombre ?? mockProfile.nombre,
-        apellido_paterno: user?.apellido_paterno ?? mockProfile.apellido_paterno,
-        apellido_materno: user?.apellido_materno ?? mockProfile.apellido_materno,
-        telefono: user?.telefono ?? mockProfile.telefono,
-        tipo_usuario: user?.tipo_usuario ?? mockProfile.tipo_usuario,
-    };
 
     if (isEditing) {
         return (
@@ -54,7 +95,7 @@ export function ProfilePage({ mode = "view" }: Props) {
                     <div>
                         <span className={styles.eyebrow}>Editar perfil</span>
                         <h1>Actualiza tus datos</h1>
-                        <p>Esta pantalla esta lista como mock para conectar la ruta real cuando exista en el backend.</p>
+                        <p>Estos datos vienen de tu cuenta registrada en Evenxa.</p>
                     </div>
                 </section>
 
@@ -70,15 +111,15 @@ export function ProfilePage({ mode = "view" }: Props) {
                         <div className={styles.formGrid}>
                             <label>
                                 Nombre
-                                <input name="nombre" type="text" defaultValue={profile.nombre} />
+                                <input name="nombre" type="text" defaultValue={profile.nombre ?? ""} />
                             </label>
                             <label>
                                 Apellido paterno
-                                <input name="apellido_paterno" type="text" defaultValue={profile.apellido_paterno} />
+                                <input name="apellido_paterno" type="text" defaultValue={profile.apellido_paterno ?? ""} />
                             </label>
                             <label>
                                 Apellido materno
-                                <input name="apellido_materno" type="text" defaultValue={profile.apellido_materno} />
+                                <input name="apellido_materno" type="text" defaultValue={profile.apellido_materno ?? ""} />
                             </label>
                             <label>
                                 Correo
@@ -86,30 +127,12 @@ export function ProfilePage({ mode = "view" }: Props) {
                             </label>
                             <label>
                                 Telefono
-                                <input name="telefono" type="tel" defaultValue={profile.telefono} />
+                                <input name="telefono" type="tel" defaultValue={profile.telefono ?? ""} />
                             </label>
                             <label>
                                 Tipo de cuenta
-                                <input name="tipo_usuario" type="text" defaultValue={profile.tipo_usuario} disabled />
+                                <input name="tipo_usuario" type="text" defaultValue={profile.tipo_usuario ?? ""} disabled />
                             </label>
-                        </div>
-                    </section>
-
-                    <section className={styles.panel}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <span className={styles.eyebrow}>Preferencias</span>
-                                <h2>Intereses</h2>
-                            </div>
-                        </div>
-
-                        <div className={styles.checkboxGrid}>
-                            {preferences.map((preference) => (
-                                <label key={preference}>
-                                    <input type="checkbox" defaultChecked />
-                                    <span>{preference}</span>
-                                </label>
-                            ))}
                         </div>
                     </section>
 
@@ -136,15 +159,6 @@ export function ProfilePage({ mode = "view" }: Props) {
                 <a className={styles.primaryAction} href={routes.myTickets}>Ver mis boletos</a>
             </section>
 
-            <section className={styles.stats} aria-label="Resumen de actividad">
-                {profileStats.map((stat) => (
-                    <article key={stat.label}>
-                        <strong>{stat.value}</strong>
-                        <span>{stat.label}</span>
-                    </article>
-                ))}
-            </section>
-
             <section className={styles.layout}>
                 <article className={styles.panel}>
                     <div className={styles.panelHeader}>
@@ -158,15 +172,15 @@ export function ProfilePage({ mode = "view" }: Props) {
                     <dl className={styles.infoGrid}>
                         <div>
                             <dt>Nombre</dt>
-                            <dd>{profile.nombre}</dd>
+                            <dd>{profile.nombre || "Sin nombre"}</dd>
                         </div>
                         <div>
                             <dt>Apellido paterno</dt>
-                            <dd>{profile.apellido_paterno}</dd>
+                            <dd>{profile.apellido_paterno || "Sin apellido"}</dd>
                         </div>
                         <div>
                             <dt>Apellido materno</dt>
-                            <dd>{profile.apellido_materno}</dd>
+                            <dd>{profile.apellido_materno || "Sin apellido"}</dd>
                         </div>
                         <div>
                             <dt>Correo</dt>
@@ -174,29 +188,15 @@ export function ProfilePage({ mode = "view" }: Props) {
                         </div>
                         <div>
                             <dt>Telefono</dt>
-                            <dd>{profile.telefono}</dd>
+                            <dd>{profile.telefono || "Sin telefono"}</dd>
                         </div>
                         <div>
                             <dt>Tipo de cuenta</dt>
-                            <dd>{profile.tipo_usuario}</dd>
+                            <dd>{profile.tipo_usuario || "Sin tipo asignado"}</dd>
                         </div>
                     </dl>
                 </article>
 
-                <aside className={styles.panel}>
-                    <div className={styles.panelHeader}>
-                        <div>
-                            <span className={styles.eyebrow}>Preferencias</span>
-                            <h2>Intereses</h2>
-                        </div>
-                    </div>
-
-                    <div className={styles.tags}>
-                        {preferences.map((preference) => (
-                            <span key={preference}>{preference}</span>
-                        ))}
-                    </div>
-                </aside>
             </section>
         </main>
     );
