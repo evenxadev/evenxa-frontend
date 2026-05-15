@@ -28,6 +28,19 @@ export type RefreshRequest = {
     refresh_token: string;
 };
 
+export type RecoverPasswordRequest = {
+    email: string;
+};
+
+export type VerifyResetCodeRequest = {
+    email: string;
+    codigo: string;
+};
+
+export type ResetPasswordRequest = VerifyResetCodeRequest & {
+    nueva_password: string;
+};
+
 type RegisterResponse = {
     usuario?: SessionUser;
     user?: SessionUser;
@@ -97,6 +110,27 @@ export const authApi = {
 
     resendCode(payload: ResendCodeRequest) {
         return apiRequest<unknown>("/auth/reenviar-codigo", {
+            method: "POST",
+            body: payload,
+        });
+    },
+
+    recoverPassword(payload: RecoverPasswordRequest) {
+        return apiRequest<unknown>("/auth/recuperar-password", {
+            method: "POST",
+            body: payload,
+        });
+    },
+
+    verifyResetCode(payload: VerifyResetCodeRequest) {
+        return apiRequest<unknown>("/auth/verificar-codigo-reset", {
+            method: "POST",
+            body: payload,
+        });
+    },
+
+    resetPassword(payload: ResetPasswordRequest) {
+        return apiRequest<unknown>("/auth/reset-password", {
             method: "POST",
             body: payload,
         });
