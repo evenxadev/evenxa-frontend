@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { routes } from "../../../app/router/routes";
-import { clearSession, getSessionRole, getStoredSession, updateStoredSessionRole } from "../../../entities/session";
+import { clearSession, getAuthSessionPhotoUrl, getSessionRole, getStoredSession, updateStoredSessionRole } from "../../../entities/session";
 import { authApi } from "../../../features/auth/api";
 import userIcon from "../../../shared/assets/icons/usuario.png";
 import logo from "../../../shared/assets/images/logo/logo-combinado.png";
@@ -47,6 +47,7 @@ export const Header = () => {
     const pathname = window.location.pathname;
     const isAuthenticated = Boolean(session?.accessToken);
     const role = getSessionRole(session);
+    const profilePhotoUrl = getAuthSessionPhotoUrl(session);
     const visibleNavLinks = getNavLinks(role, isAuthenticated);
 
     const isActive = (href: string) => {
@@ -120,7 +121,12 @@ export const Header = () => {
                                 aria-label="Ver perfil"
                                 title="Perfil"
                             >
-                                <img src={userIcon} alt="" aria-hidden="true" />
+                                <img
+                                    className={profilePhotoUrl ? styles.profilePhoto : ""}
+                                    src={profilePhotoUrl || userIcon}
+                                    alt=""
+                                    aria-hidden="true"
+                                />
                             </a>
                             <button
                                 className={styles.logoutButton}
@@ -176,7 +182,12 @@ export const Header = () => {
                                 className={`${styles.mobileProfileLink} ${isActive(routes.profile) ? styles.activeLink : ""}`}
                                 href={routes.profile}
                             >
-                                <img src={userIcon} alt="" aria-hidden="true" />
+                                <img
+                                    className={profilePhotoUrl ? styles.profilePhoto : ""}
+                                    src={profilePhotoUrl || userIcon}
+                                    alt=""
+                                    aria-hidden="true"
+                                />
                                 Perfil
                             </a>
                             <button

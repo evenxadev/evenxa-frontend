@@ -1,6 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { routes } from "../../app/router/routes";
-import { getStoredSession, saveSession, type SessionUser } from "../../entities/session";
+import {
+    getAuthSessionPhotoUrl,
+    getSessionUserPhotoUrl,
+    getStoredSession,
+    saveSession,
+    type SessionUser,
+} from "../../entities/session";
 import { ApiError } from "../../shared/api";
 import { profileApi } from "../../features/profile/api";
 import { getMissingProfileFields, isProfileFieldFilled, type RequiredProfileField } from "../../features/profile/model";
@@ -32,7 +38,14 @@ export function ProfilePage({ mode = "view" }: Props) {
         profileApi.getProfile(accessToken)
             .then((userProfile) => {
                 if (isMounted) {
-                    setProfile(userProfile);
+                    setProfile({
+                        ...session?.user,
+                        ...userProfile,
+                        foto_url: userProfile.foto_url ?? session?.user?.foto_url ?? getAuthSessionPhotoUrl(session),
+                        avatar_url: userProfile.avatar_url ?? session?.user?.avatar_url,
+                        photo_url: userProfile.photo_url ?? session?.user?.photo_url,
+                        picture: userProfile.picture ?? session?.user?.picture,
+                    });
                 }
             })
             .catch((requestError) => {
@@ -91,6 +104,7 @@ export function ProfilePage({ mode = "view" }: Props) {
         .join("")
         .toUpperCase();
     const missingFields = getMissingProfileFields(profile);
+    const profilePhotoUrl = getSessionUserPhotoUrl(profile) || getAuthSessionPhotoUrl(session);
     const hasMissingFields = missingFields.length > 0;
     const missingFieldNames = missingFields.map((field) => field.label).join(", ");
     const isMissingField = (field: RequiredProfileField) => {
@@ -233,7 +247,9 @@ export function ProfilePage({ mode = "view" }: Props) {
     return (
         <main className={styles.page}>
             <section className={styles.hero}>
-                <div className={styles.avatar} aria-hidden="true">{initials}</div>
+                <div className={styles.avatar} aria-hidden="true">
+                    {profilePhotoUrl ? <img src={profilePhotoUrl} alt="" /> : initials}
+                </div>
 
                 <div>
                     <span className={styles.eyebrow}>Mi perfil</span>

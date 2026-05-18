@@ -8,6 +8,10 @@ export type SessionUser = {
     apellido_materno?: string;
     telefono?: string;
     tipo_usuario?: UserRole;
+    foto_url?: string;
+    avatar_url?: string;
+    photo_url?: string;
+    picture?: string;
 };
 
 export type AuthSession = {
