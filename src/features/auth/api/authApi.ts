@@ -60,6 +60,10 @@ type LoginPayload = {
     user?: SessionUser;
     tipo_usuario?: string;
     rol?: string;
+    foto_url?: string;
+    avatar_url?: string;
+    photo_url?: string;
+    picture?: string;
 };
 
 type RefreshResponse = {
@@ -87,6 +91,10 @@ const normalizeSession = (response: LoginResponse, email: string): AuthSession =
             email,
             ...payload.user,
             ...payload.usuario,
+            foto_url: payload.foto_url ?? payload.user?.foto_url ?? payload.usuario?.foto_url,
+            avatar_url: payload.avatar_url ?? payload.user?.avatar_url ?? payload.usuario?.avatar_url,
+            photo_url: payload.photo_url ?? payload.user?.photo_url ?? payload.usuario?.photo_url,
+            picture: payload.picture ?? payload.user?.picture ?? payload.usuario?.picture,
             tipo_usuario: normalizeRole(
                 payload.tipo_usuario ?? payload.rol ?? payload.user?.tipo_usuario ?? payload.usuario?.tipo_usuario,
             ),

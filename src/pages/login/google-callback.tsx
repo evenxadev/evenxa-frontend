@@ -38,6 +38,15 @@ const getSessionFromParams = (): AuthSession | null => {
     const user = parseUser(params.get("user"));
     const email = params.get("email") ?? user.email ?? "";
     const role = params.get("tipo_usuario") ?? params.get("role") ?? user.tipo_usuario;
+    const photoUrl =
+        params.get("foto_url") ??
+        params.get("avatar_url") ??
+        params.get("photo_url") ??
+        params.get("picture") ??
+        user.foto_url ??
+        user.avatar_url ??
+        user.photo_url ??
+        user.picture;
 
     return {
         accessToken,
@@ -46,6 +55,10 @@ const getSessionFromParams = (): AuthSession | null => {
             ...user,
             email,
             nombre: params.get("nombre") ?? user.nombre,
+            foto_url: photoUrl,
+            avatar_url: user.avatar_url,
+            photo_url: user.photo_url,
+            picture: user.picture,
             tipo_usuario: normalizeRole(role),
         },
     };

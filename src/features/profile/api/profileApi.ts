@@ -32,6 +32,10 @@ const normalizeProfile = (response: ProfileResponse): SessionUser => {
         apellido_paterno: payload.apellido_paterno,
         apellido_materno: payload.apellido_materno,
         telefono: payload.telefono,
+        foto_url: payload.foto_url,
+        avatar_url: payload.avatar_url,
+        photo_url: payload.photo_url,
+        picture: payload.picture,
         tipo_usuario: normalizeRole(payload.tipo_usuario ?? payload.rol),
     };
 };

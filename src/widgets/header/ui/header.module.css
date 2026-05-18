@@ -141,6 +141,13 @@
         transform var(--transition-fast);
 }
 
+.profileLink .profilePhoto,
+.mobileProfileLink .profilePhoto {
+    border-radius: 50%;
+    object-fit: cover;
+    filter: none;
+}
+
 .profileLink:hover,
 .profileLinkActive {
     background: transparent;
