@@ -11,6 +11,7 @@ import {
 import { ApiError } from "../../shared/api";
 import { profileApi } from "../../features/profile/api";
 import { getMissingProfileFields, isProfileFieldFilled, type RequiredProfileField } from "../../features/profile/model";
+import trashIcon from "../../shared/assets/icons/basura.png";
 import styles from "./profile.module.css";
 
 type Props = {
@@ -344,6 +345,7 @@ export function ProfilePage({ mode = "view" }: Props) {
                     </div>
                     {deleteError && <p className={styles.formError}>{deleteError}</p>}
                     <button type="button" onClick={handleDeleteAccount} disabled={isDeleting}>
+                        <img className={styles.deleteIcon} src={trashIcon} alt="" aria-hidden="true" />
                         {isDeleting ? "Eliminando..." : "Eliminar cuenta"}
                     </button>
                 </section>
