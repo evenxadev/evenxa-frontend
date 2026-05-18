@@ -166,6 +166,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     width: fit-content;
     min-height: 46px;
     padding: 11px 14px;
@@ -174,6 +175,13 @@
     background: rgba(254, 124, 102, 0.16);
     color: #ffb8aa;
     font-weight: 800;
+}
+
+.deleteIcon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex: 0 0 auto;
 }
 
 .dangerZone button:hover {
