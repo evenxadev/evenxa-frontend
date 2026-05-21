@@ -32,6 +32,7 @@
 
   /* UI */
   --shadow: rgba(0, 0, 0, 0.4) 0 10px 30px -10px;
+  --app-header-height: 73px;
 
   /* TYPOGRAPHY */
   --font-main: 'Montserrat', sans-serif;
