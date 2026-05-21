@@ -1,5 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { routes } from "../../../app/router/routes";
+import searchIcon from "../../../shared/assets/icons/busqueda.png";
 import styles from "./event-search-bar.module.css";
 
 type Props = {
@@ -28,16 +29,18 @@ export function EventSearchBar({ defaultValue = "", compact = false }: Props) {
             onSubmit={handleSubmit}
         >
             <label>
-                <span>Buscar eventos</span>
                 <input
                     type="search"
                     value={query}
+                    aria-label="Buscar eventos"
                     placeholder="Busca por evento, ciudad o artista"
                     onChange={(event) => setQuery(event.target.value)}
                 />
             </label>
 
-            <button type="submit">Buscar</button>
+            <button type="submit" aria-label="Buscar">
+                <img src={searchIcon} alt="" aria-hidden="true" />
+            </button>
         </form>
     );
 }

@@ -35,7 +35,10 @@
 }
 
 .searchSection {
-    padding: 22px 0 4px;
+    position: sticky;
+    top: var(--app-header-height);
+    z-index: 80;
+    padding: 6px 0 10px;
 }
 
 .toolbar {

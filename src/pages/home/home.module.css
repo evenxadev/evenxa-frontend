@@ -6,9 +6,12 @@
 }
 
 .searchSection {
+    position: sticky;
+    top: var(--app-header-height);
+    z-index: 80;
     display: flex;
     justify-content: center;
     width: min(100%, 1200px);
     margin: 0 auto;
-    padding: var(--space-lg) var(--space-md) var(--space-md);
+    padding: 6px var(--space-md) var(--space-md);
 }
