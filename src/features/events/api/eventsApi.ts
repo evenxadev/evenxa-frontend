@@ -22,19 +22,15 @@ export type EventCategory = {
 export type CreateEventPayload = {
     titulo: string;
     categoria_id: string;
-    venue_id: string;
+    nombre_venue: string;
     descripcion?: string;
     descripcion_corta?: string;
+    direccion_venue?: string;
+    ciudad_venue?: string;
     imagen_portada?: string;
     artistas?: Array<{ nombre: string }>;
     tags?: string[];
     edad_minima?: number;
-    politicas_reembolso?: string;
-    instrucciones_acceso?: string;
-};
-
-export type CreateEventRequest = CreateEventPayload & {
-    imagen_portada_file?: File;
 };
 
 export type AddFunctionPayload = {
@@ -48,21 +44,18 @@ export type AddTicketTypePayload = {
     nombre: string;
     precio: number;
     cantidad_total: number;
-    descripcion?: string;
     cargo_servicio?: number;
     max_por_orden?: number;
-    min_por_orden?: number;
-    fecha_inicio_venta?: string;
-    fecha_fin_venta?: string;
     zona?: string;
     color?: string;
-    is_numerado?: boolean;
-    is_transferible?: boolean;
-    is_reembolsable?: boolean;
 };
 
 type ApiData<T> = {
     data: T;
+};
+
+type UploadImageData = {
+    url?: string;
 };
 
 const unwrapData = <TResponse>(response: TResponse | ApiData<TResponse>) => {
@@ -93,27 +86,6 @@ const getCreatedId = (payload: unknown, nestedKey: "evento" | "funcion") => {
     return "";
 };
 
-const createEventBody = (payload: CreateEventRequest) => {
-    if (!payload.imagen_portada_file) {
-        return payload;
-    }
-
-    const { imagen_portada_file: imageFile, ...fields } = payload;
-    const formData = new FormData();
-
-    Object.entries(fields).forEach(([key, value]) => {
-        if (value === undefined) {
-            return;
-        }
-
-        formData.append(key, typeof value === "string" ? value : JSON.stringify(value));
-    });
-
-    formData.append("imagen_portada", imageFile);
-
-    return formData;
-};
-
 export const eventsApi = {
     async getMyEvents(token: string) {
         const response = await apiRequest<ApiData<ManagedEvent[]> | ManagedEvent[]>("/eventos/mis-eventos", {
@@ -124,11 +96,30 @@ export const eventsApi = {
         return unwrapData(response);
     },
 
-    async createEvent(token: string, payload: CreateEventRequest) {
+    async uploadImage(token: string, file: File) {
+        const formData = new FormData();
+
+        formData.append("imagen", file);
+
+        const response = await apiRequest<ApiData<UploadImageData> | UploadImageData>("/uploads/imagen", {
+            method: "POST",
+            token,
+            body: formData,
+        });
+        const uploadedImage = unwrapData(response);
+
+        if (!uploadedImage.url) {
+            throw new Error("El backend no regreso la URL de la imagen.");
+        }
+
+        return uploadedImage.url;
+    },
+
+    async createEvent(token: string, payload: CreateEventPayload) {
         const response = await apiRequest<unknown>("/eventos", {
             method: "POST",
             token,
-            body: createEventBody(payload),
+            body: payload,
         });
 
         const createdEvent = unwrapData(response);

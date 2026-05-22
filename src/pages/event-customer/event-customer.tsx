@@ -1,22 +1,22 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { routes } from "../../app/router/routes";
 import { getStoredSession } from "../../entities/session";
-import { eventsApi, type AddTicketTypePayload, type CreateEventRequest, type EventCategory, type ManagedEvent } from "../../features/events/api";
+import { eventsApi, type AddTicketTypePayload, type CreateEventPayload, type EventCategory, type ManagedEvent } from "../../features/events/api";
 import { ApiError } from "../../shared/api";
 import styles from "./event-customer.module.css";
 
 type EventForm = {
     titulo: string;
     categoria_id: string;
-    venue_id: string;
+    nombre_venue: string;
+    direccion_venue: string;
+    ciudad_venue: string;
     descripcion_corta: string;
     descripcion: string;
     imagen_portada: string;
     artistas: string;
     tags: string;
     edad_minima: string;
-    politicas_reembolso: string;
-    instrucciones_acceso: string;
 };
 
 type MediaFileNames = {
@@ -38,31 +38,24 @@ type TicketForm = {
     nombre: string;
     precio: string;
     cantidad_total: string;
-    descripcion: string;
     cargo_servicio: string;
     max_por_orden: string;
-    min_por_orden: string;
-    fecha_inicio_venta: string;
-    fecha_fin_venta: string;
     zona: string;
     color: string;
-    is_numerado: boolean;
-    is_transferible: boolean;
-    is_reembolsable: boolean;
 };
 
 const initialEventForm: EventForm = {
     titulo: "",
     categoria_id: "",
-    venue_id: "",
+    nombre_venue: "",
+    direccion_venue: "",
+    ciudad_venue: "",
     descripcion_corta: "",
     descripcion: "",
     imagen_portada: "",
     artistas: "",
     tags: "",
     edad_minima: "0",
-    politicas_reembolso: "",
-    instrucciones_acceso: "",
 };
 
 const initialMediaFileNames: MediaFileNames = {
@@ -80,17 +73,10 @@ const createEmptyTicket = (): TicketForm => ({
     nombre: "",
     precio: "",
     cantidad_total: "",
-    descripcion: "",
     cargo_servicio: "",
     max_por_orden: "10",
-    min_por_orden: "1",
-    fecha_inicio_venta: "",
-    fecha_fin_venta: "",
     zona: "",
     color: "#ff66c4",
-    is_numerado: false,
-    is_transferible: true,
-    is_reembolsable: true,
 });
 
 const splitValues = (value: string) => {
@@ -110,6 +96,9 @@ const optionalNumber = (value: string) => {
     return value === "" ? undefined : Number(value);
 };
 
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
 const getErrorMessage = (error: unknown) => {
     if (error instanceof ApiError) {
         return error.message;
@@ -122,23 +111,22 @@ const getErrorMessage = (error: unknown) => {
     return "No pudimos completar la accion.";
 };
 
-const buildEventPayload = (form: EventForm, files: MediaFiles): CreateEventRequest => {
+const buildEventPayload = (form: EventForm, imageUrl?: string): CreateEventPayload => {
     const artistas = splitValues(form.artistas).map((nombre) => ({ nombre }));
     const tags = splitValues(form.tags);
 
     return {
         titulo: form.titulo.trim(),
         categoria_id: form.categoria_id.trim(),
-        venue_id: form.venue_id.trim(),
+        nombre_venue: form.nombre_venue.trim(),
         descripcion: optionalText(form.descripcion),
         descripcion_corta: optionalText(form.descripcion_corta),
-        imagen_portada: optionalText(form.imagen_portada),
+        direccion_venue: optionalText(form.direccion_venue),
+        ciudad_venue: optionalText(form.ciudad_venue),
+        imagen_portada: imageUrl ?? optionalText(form.imagen_portada),
         artistas: artistas.length ? artistas : undefined,
         tags: tags.length ? tags : undefined,
         edad_minima: optionalNumber(form.edad_minima) ?? 0,
-        politicas_reembolso: optionalText(form.politicas_reembolso),
-        instrucciones_acceso: optionalText(form.instrucciones_acceso),
-        imagen_portada_file: files.imagen_portada,
     };
 };
 
@@ -146,17 +134,10 @@ const buildTicketPayload = (ticket: TicketForm): AddTicketTypePayload => ({
     nombre: ticket.nombre.trim(),
     precio: Number(ticket.precio),
     cantidad_total: Number(ticket.cantidad_total),
-    descripcion: optionalText(ticket.descripcion),
     cargo_servicio: optionalNumber(ticket.cargo_servicio),
     max_por_orden: optionalNumber(ticket.max_por_orden),
-    min_por_orden: optionalNumber(ticket.min_por_orden),
-    fecha_inicio_venta: optionalText(ticket.fecha_inicio_venta),
-    fecha_fin_venta: optionalText(ticket.fecha_fin_venta),
     zona: optionalText(ticket.zona),
     color: optionalText(ticket.color),
-    is_numerado: ticket.is_numerado,
-    is_transferible: ticket.is_transferible,
-    is_reembolsable: ticket.is_reembolsable,
 });
 
 export function EventCustomerPage() {
@@ -241,6 +222,21 @@ export function EventCustomerPage() {
             return;
         }
 
+        if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+            setMediaFiles((current) => ({ ...current, [field]: undefined }));
+            setMediaFileNames((current) => ({ ...current, [field]: "" }));
+            setError("La imagen debe ser JPG, PNG o WEBP.");
+            return;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE_BYTES) {
+            setMediaFiles((current) => ({ ...current, [field]: undefined }));
+            setMediaFileNames((current) => ({ ...current, [field]: "" }));
+            setError("La imagen debe pesar 5MB o menos.");
+            return;
+        }
+
+        setError("");
         setEventForm((current) => ({ ...current, [field]: "" }));
         setMediaFiles((current) => ({ ...current, [field]: file }));
         setMediaFileNames((current) => ({ ...current, [field]: file.name }));
@@ -275,7 +271,7 @@ export function EventCustomerPage() {
             return;
         }
 
-        if (!eventForm.titulo.trim() || !eventForm.categoria_id.trim() || !eventForm.venue_id.trim()) {
+        if (!eventForm.titulo.trim() || !eventForm.categoria_id.trim() || !eventForm.nombre_venue.trim()) {
             setError("Completa titulo, categoria y lugar del evento.");
             return;
         }
@@ -293,7 +289,10 @@ export function EventCustomerPage() {
         setIsSubmitting(true);
 
         try {
-            const createdEvent = await eventsApi.createEvent(token, buildEventPayload(eventForm, mediaFiles));
+            const uploadedImageUrl = mediaFiles.imagen_portada
+                ? await eventsApi.uploadImage(token, mediaFiles.imagen_portada)
+                : undefined;
+            const createdEvent = await eventsApi.createEvent(token, buildEventPayload(eventForm, uploadedImageUrl));
             const createdFunction = await eventsApi.addFunction(token, createdEvent.id, {
                 fecha_inicio: functionForm.fecha_inicio,
                 nombre: optionalText(functionForm.nombre),
@@ -385,8 +384,8 @@ export function EventCustomerPage() {
                             <label>
                                 Lugar del evento
                                 <input
-                                    value={eventForm.venue_id}
-                                    onChange={(event) => handleEventFieldChange("venue_id", event.target.value)}
+                                    value={eventForm.nombre_venue}
+                                    onChange={(event) => handleEventFieldChange("nombre_venue", event.target.value)}
                                     placeholder="Estadio, foro, salon o recinto"
                                     required
                                 />
@@ -399,6 +398,24 @@ export function EventCustomerPage() {
                                     min="0"
                                     value={eventForm.edad_minima}
                                     onChange={(event) => handleEventFieldChange("edad_minima", event.target.value)}
+                                />
+                            </label>
+
+                            <label>
+                                Ciudad del venue
+                                <input
+                                    value={eventForm.ciudad_venue}
+                                    onChange={(event) => handleEventFieldChange("ciudad_venue", event.target.value)}
+                                    placeholder="Queretaro"
+                                />
+                            </label>
+
+                            <label>
+                                Direccion del venue
+                                <input
+                                    value={eventForm.direccion_venue}
+                                    onChange={(event) => handleEventFieldChange("direccion_venue", event.target.value)}
+                                    placeholder="Av. Torres 1000"
                                 />
                             </label>
 
@@ -430,7 +447,7 @@ export function EventCustomerPage() {
                                 Imagen portada
                                 <input
                                     type="file"
-                                    accept="image/*"
+                                    accept="image/jpeg,image/png,image/webp"
                                     onChange={(event) => handleMediaFileChange("imagen_portada", event.target.files?.[0])}
                                 />
                                 {mediaFileNames.imagen_portada && (
@@ -575,16 +592,6 @@ export function EventCustomerPage() {
                                         </label>
 
                                         <label>
-                                            Min por orden
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={ticket.min_por_orden}
-                                                onChange={(event) => updateTicket(index, "min_por_orden", event.target.value)}
-                                            />
-                                        </label>
-
-                                        <label>
                                             Max por orden
                                             <input
                                                 type="number"
@@ -612,61 +619,6 @@ export function EventCustomerPage() {
                                             />
                                         </label>
 
-                                        <label>
-                                            Inicio venta
-                                            <input
-                                                type="datetime-local"
-                                                value={ticket.fecha_inicio_venta}
-                                                onChange={(event) => updateTicket(index, "fecha_inicio_venta", event.target.value)}
-                                            />
-                                        </label>
-
-                                        <label>
-                                            Fin venta
-                                            <input
-                                                type="datetime-local"
-                                                value={ticket.fecha_fin_venta}
-                                                onChange={(event) => updateTicket(index, "fecha_fin_venta", event.target.value)}
-                                            />
-                                        </label>
-
-                                        <label className={styles.fullField}>
-                                            Descripcion
-                                            <textarea
-                                                rows={3}
-                                                value={ticket.descripcion}
-                                                onChange={(event) => updateTicket(index, "descripcion", event.target.value)}
-                                            />
-                                        </label>
-                                    </div>
-
-                                    <div className={styles.switches}>
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={ticket.is_numerado}
-                                                onChange={(event) => updateTicket(index, "is_numerado", event.target.checked)}
-                                            />
-                                            Numerado
-                                        </label>
-
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={ticket.is_transferible}
-                                                onChange={(event) => updateTicket(index, "is_transferible", event.target.checked)}
-                                            />
-                                            Transferible
-                                        </label>
-
-                                        <label>
-                                            <input
-                                                type="checkbox"
-                                                checked={ticket.is_reembolsable}
-                                                onChange={(event) => updateTicket(index, "is_reembolsable", event.target.checked)}
-                                            />
-                                            Reembolsable
-                                        </label>
                                     </div>
                                 </div>
                             ))}
@@ -674,27 +626,7 @@ export function EventCustomerPage() {
                     </fieldset>
 
                     <fieldset className={styles.formSection}>
-                        <legend>Politicas</legend>
-
-                        <div className={styles.formGrid}>
-                            <label className={styles.fullField}>
-                                Politicas de reembolso
-                                <textarea
-                                    rows={3}
-                                    value={eventForm.politicas_reembolso}
-                                    onChange={(event) => handleEventFieldChange("politicas_reembolso", event.target.value)}
-                                />
-                            </label>
-
-                            <label className={styles.fullField}>
-                                Instrucciones de acceso
-                                <textarea
-                                    rows={3}
-                                    value={eventForm.instrucciones_acceso}
-                                    onChange={(event) => handleEventFieldChange("instrucciones_acceso", event.target.value)}
-                                />
-                            </label>
-                        </div>
+                        <legend>Publicacion</legend>
 
                         <label className={styles.publishToggle}>
                             <input
