@@ -43,13 +43,15 @@ export function ProfilePage({ mode = "view" }: Props) {
         profileApi.getProfile(accessToken)
             .then((userProfile) => {
                 if (isMounted) {
+                    const currentSession = getStoredSession();
+
                     setProfile({
-                        ...session?.user,
+                        ...currentSession?.user,
                         ...userProfile,
-                        foto_url: userProfile.foto_url ?? session?.user?.foto_url ?? getAuthSessionPhotoUrl(session),
-                        avatar_url: userProfile.avatar_url ?? session?.user?.avatar_url,
-                        photo_url: userProfile.photo_url ?? session?.user?.photo_url,
-                        picture: userProfile.picture ?? session?.user?.picture,
+                        foto_url: userProfile.foto_url ?? currentSession?.user?.foto_url ?? getAuthSessionPhotoUrl(currentSession),
+                        avatar_url: userProfile.avatar_url ?? currentSession?.user?.avatar_url,
+                        photo_url: userProfile.photo_url ?? currentSession?.user?.photo_url,
+                        picture: userProfile.picture ?? currentSession?.user?.picture,
                     });
                 }
             })
