@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { routes } from "../../app/router/routes";
 import { clearSession, getStoredSession, saveSession, type SessionUser } from "../../entities/session";
+import { raffles as mockRaffles, type Raffle, type RaffleStatus } from "../../entities/raffle";
 import { adminApi, type AdminEvent, type AdminUser, type AdminUserRole } from "../../features/admin/api";
 import { authApi } from "../../features/auth/api";
 import { organizerRequestsApi, type OrganizerRequest, type OrganizerRequestStatus } from "../../features/organizers/api";
@@ -12,7 +13,7 @@ import { kustikaMark } from "../../shared/assets/images/logo";
 import styles from "./admin.module.css";
 
 type AdminPageProps = {
-    page?: "users" | "events" | "requests" | "profile";
+    page?: "users" | "events" | "raffles" | "requests" | "profile";
 };
 
 const roleOptions: Array<{ value: AdminUserRole; label: string }> = [
@@ -27,6 +28,13 @@ const requestStatusOptions: Array<{ value: OrganizerRequestStatus | "todos"; lab
     { value: "pendiente", label: "Pendientes" },
     { value: "aprobada", label: "Aprobadas" },
     { value: "rechazada", label: "Rechazadas" },
+];
+
+const raffleStatusOptions: Array<{ value: RaffleStatus; label: string }> = [
+    { value: "trending", label: "En tendencia" },
+    { value: "limited", label: "Limitada" },
+    { value: "hot", label: "Popular" },
+    { value: "rare", label: "Especial" },
 ];
 
 const getFullName = (user: AdminUser) =>
@@ -90,6 +98,15 @@ const getTokenUserId = (accessToken?: string) => {
     }
 };
 
+const createSlug = (value: string) => {
+    return value
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") || `sorteo-${Date.now()}`;
+};
+
 export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
     const alerts = useAlerts();
     const session = getStoredSession();
@@ -99,6 +116,7 @@ export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
     const displayName = [session?.user?.nombre, session?.user?.apellido_paterno].filter(Boolean).join(" ") || "Administrador";
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [events, setEvents] = useState<AdminEvent[]>([]);
+    const [raffleList, setRaffleList] = useState<Raffle[]>(mockRaffles);
     const [requests, setRequests] = useState<OrganizerRequest[]>([]);
     const [requestStatus, setRequestStatus] = useState<OrganizerRequestStatus | "todos">("pendiente");
     const [profile, setProfile] = useState<SessionUser | null>(session?.user ?? null);
@@ -481,6 +499,64 @@ export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
     const pendingRequests = requests.filter((request) => request.status === "pendiente").length;
     const publishedEvents = events.filter((event) => event.status.toLowerCase() === "publicado").length;
     const cancelledEvents = events.filter((event) => event.status.toLowerCase() === "cancelado").length;
+    const featuredRaffles = raffleList.filter((raffle) => raffle.featured).length;
+    const totalRaffleTickets = raffleList.reduce((totalTickets, raffle) => {
+        const ticketCount = Number(raffle.ticketsSold.replace(/[^\d]/g, ""));
+
+        return totalTickets + (Number.isFinite(ticketCount) ? ticketCount : 0);
+    }, 0);
+
+    const handleCreateRaffle = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const formData = new FormData(event.currentTarget);
+        const title = String(formData.get("title") ?? "").trim();
+        const subtitle = String(formData.get("subtitle") ?? "").trim();
+        const description = String(formData.get("description") ?? "").trim();
+        const price = String(formData.get("price") ?? "").trim();
+        const ticketPrice = Number(formData.get("ticketPrice"));
+        const entries = String(formData.get("entries") ?? "").trim();
+        const ticketsSold = String(formData.get("ticketsSold") ?? "").trim();
+        const endsIn = String(formData.get("endsIn") ?? "").trim();
+        const status = String(formData.get("status") ?? "trending") as RaffleStatus;
+        const image = String(formData.get("image") ?? "").trim() || mockRaffles[0].image;
+        const featured = formData.get("featured") === "on";
+
+        if (!title || !subtitle || !description || !price || !entries || !ticketsSold || !endsIn || !Number.isFinite(ticketPrice)) {
+            alerts.notify({
+                tone: "error",
+                title: "Sorteo incompleto",
+                message: "Completa todos los datos principales del sorteo mock.",
+            });
+            return;
+        }
+
+        const nextRaffle: Raffle = {
+            id: createSlug(title),
+            title,
+            subtitle,
+            description,
+            price,
+            ticketPrice,
+            entries,
+            ticketsSold,
+            endsIn,
+            status,
+            image,
+            featured,
+        };
+
+        setRaffleList((currentRaffles) => [
+            nextRaffle,
+            ...currentRaffles.map((raffle) => featured ? { ...raffle, featured: false } : raffle),
+        ]);
+        event.currentTarget.reset();
+        alerts.notify({
+            tone: "success",
+            title: "Sorteo mock creado",
+            message: "Se agrego al panel local. Cuando exista endpoint, conectamos este formulario a la API.",
+        });
+    };
 
     return (
         <main className={styles.shell}>
@@ -496,6 +572,9 @@ export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
                     </a>
                     <a className={activePage === "events" ? styles.activeNavItem : ""} href={routes.adminEvents}>
                         Eventos
+                    </a>
+                    <a className={activePage === "raffles" ? styles.activeNavItem : ""} href={routes.adminRaffles}>
+                        Sorteos
                     </a>
                     <a className={activePage === "requests" ? styles.activeNavItem : ""} href={routes.adminRequests}>
                         Solicitudes
@@ -519,7 +598,9 @@ export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
                                 ? "Mi perfil"
                                 : activePage === "requests"
                                     ? "Solicitudes"
-                                    : activePage === "events" ? "Eventos" : "Usuarios"
+                                    : activePage === "raffles"
+                                        ? "Sorteos"
+                                        : activePage === "events" ? "Eventos" : "Usuarios"
                         }</h1>
                     </div>
 
@@ -711,6 +792,114 @@ export function AdminPage({ page: activePage = "users" }: AdminPageProps) {
                                     </div>
                                 )}
                             </div>
+                        </section>
+                    </>
+                ) : activePage === "raffles" ? (
+                    <>
+                        <section className={styles.statsGrid} aria-label="Resumen de sorteos">
+                            <article>
+                                <span>Total sorteos</span>
+                                <strong>{raffleList.length}</strong>
+                            </article>
+                            <article>
+                                <span>Destacados</span>
+                                <strong>{featuredRaffles}</strong>
+                            </article>
+                            <article>
+                                <span>Boletos vendidos</span>
+                                <strong>{totalRaffleTickets.toLocaleString("es-MX")}</strong>
+                            </article>
+                        </section>
+
+                        <section className={styles.raffleLayout}>
+                            <form className={`${styles.panel} ${styles.raffleForm}`} onSubmit={handleCreateRaffle}>
+                                <div className={styles.panelHeader}>
+                                    <div>
+                                        <span>Sorteos mock</span>
+                                        <h2>Crear sorteo</h2>
+                                    </div>
+                                </div>
+
+                                <div className={styles.formGrid}>
+                                    <label>
+                                        Titulo
+                                        <input name="title" type="text" placeholder="Experiencia de lujo en Ibiza" required />
+                                    </label>
+                                    <label>
+                                        Subtitulo
+                                        <input name="subtitle" type="text" placeholder="Viaje completo para dos personas" required />
+                                    </label>
+                                    <label className={styles.fullField}>
+                                        Descripcion
+                                        <textarea name="description" rows={4} placeholder="Describe el premio y lo que incluye." required />
+                                    </label>
+                                    <label>
+                                        Precio visible
+                                        <input name="price" type="text" placeholder="$19.99" required />
+                                    </label>
+                                    <label>
+                                        Precio numerico
+                                        <input name="ticketPrice" type="number" min="0" step="0.01" placeholder="19.99" required />
+                                    </label>
+                                    <label>
+                                        Entradas
+                                        <input name="entries" type="text" placeholder="5,432 entradas" required />
+                                    </label>
+                                    <label>
+                                        Boletos vendidos
+                                        <input name="ticketsSold" type="text" placeholder="15,203" required />
+                                    </label>
+                                    <label>
+                                        Termina en
+                                        <input name="endsIn" type="text" placeholder="23:59:05" required />
+                                    </label>
+                                    <label>
+                                        Estado
+                                        <select name="status" defaultValue="trending">
+                                            {raffleStatusOptions.map((option) => (
+                                                <option value={option.value} key={option.value}>
+                                                    {option.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <label className={styles.fullField}>
+                                        URL de imagen
+                                        <input name="image" type="url" placeholder="Opcional: se usa una imagen mock si lo dejas vacio" />
+                                    </label>
+                                    <label className={styles.checkboxField}>
+                                        <input name="featured" type="checkbox" />
+                                        Marcar como sorteo destacado
+                                    </label>
+                                </div>
+
+                                <div className={styles.formActions}>
+                                    <button type="submit">Crear sorteo mock</button>
+                                </div>
+                            </form>
+
+                            <section className={`${styles.panel} ${styles.rafflePreviewPanel}`}>
+                                <div className={styles.panelHeader}>
+                                    <div>
+                                        <span>Catalogo local</span>
+                                        <h2>Sorteos creados</h2>
+                                    </div>
+                                </div>
+
+                                <div className={styles.rafflePreviewList}>
+                                    {raffleList.map((raffle) => (
+                                        <article className={styles.rafflePreview} key={raffle.id}>
+                                            <img src={raffle.image} alt="" aria-hidden="true" />
+                                            <div>
+                                                <span>{raffle.featured ? "Destacado" : raffleStatusOptions.find((option) => option.value === raffle.status)?.label}</span>
+                                                <strong>{raffle.title}</strong>
+                                                <p>{raffle.subtitle}</p>
+                                                <small>{raffle.price} / boleto - {raffle.ticketsSold} vendidos</small>
+                                            </div>
+                                        </article>
+                                    ))}
+                                </div>
+                            </section>
                         </section>
                     </>
                 ) : activePage === "requests" ? (

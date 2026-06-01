@@ -66,7 +66,13 @@ export function AppRouter() {
         );
     }
 
-    if (pathname === routes.admin || pathname === routes.adminEvents || pathname === routes.adminProfile || pathname === routes.adminRequests) {
+    if (
+        pathname === routes.admin ||
+        pathname === routes.adminEvents ||
+        pathname === routes.adminRaffles ||
+        pathname === routes.adminProfile ||
+        pathname === routes.adminRequests
+    ) {
         return (
             <RoleAccess allowedRole="admin">
                 <AdminPage page={
@@ -74,7 +80,9 @@ export function AppRouter() {
                         ? "profile"
                         : pathname === routes.adminRequests
                             ? "requests"
-                            : pathname === routes.adminEvents ? "events" : "users"
+                            : pathname === routes.adminRaffles
+                                ? "raffles"
+                                : pathname === routes.adminEvents ? "events" : "users"
                 } />
             </RoleAccess>
         );
