@@ -13,6 +13,7 @@ export const routes = {
     organizerRequest: "/solicitud-organizador",
     admin: "/admin",
     adminEvents: "/admin/eventos",
+    adminRaffles: "/admin/sorteos",
     adminRequests: "/admin/solicitudes",
     adminProfile: "/admin/perfil",
     profile: "/perfil",
