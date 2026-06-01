@@ -74,21 +74,21 @@ export function RafflesPage() {
         <main className={styles.page}>
             <section className={styles.hero} aria-labelledby="raffles-title">
                 <div>
-                    <span>Rifas Kustika</span>
-                    <h1 id="raffles-title">Rifas para ganar experiencias únicas.</h1>
+                    <span>Sorteos Kustika</span>
+                    <h1 id="raffles-title">Sorteos para ganar experiencias únicas.</h1>
                     <p>
-                        Compra tu entrada, participa en sorteos activos y sigue el contador antes de que cierre cada rifa.
+                        Compra tu entrada, participa en sorteos activos y sigue el contador antes de que cierre cada sorteo.
                     </p>
                 </div>
             </section>
 
             <section className={styles.featuredSection} aria-labelledby="featured-raffle-title">
-                <h2 id="featured-raffle-title"><span aria-hidden="true">★</span> Rifa destacada</h2>
+                <h2 id="featured-raffle-title"><span aria-hidden="true">★</span> Sorteo destacado</h2>
                 <FeaturedRaffle raffle={featuredRaffle} />
             </section>
 
             <section className={styles.activeSection} aria-labelledby="active-raffles-title">
-                <h2 id="active-raffles-title">Rifas activas</h2>
+                <h2 id="active-raffles-title">Sorteos activos</h2>
                 <div className={styles.raffleGrid}>
                     {activeRaffles.map((raffle) => (
                         <RaffleCard raffle={raffle} key={raffle.id} />
