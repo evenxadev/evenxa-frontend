@@ -55,7 +55,7 @@ export function RaffleDetailPage({ raffleId }: RaffleDetailPageProps) {
                 <section className={styles.notFound}>
                     <h1>Sorteo no encontrado</h1>
                     <p>Ese sorteo ya no está disponible o cambió de dirección.</p>
-                    <a href={routes.raffles}>Volver a rifas</a>
+                    <a href={routes.raffles}>Volver a sorteos</a>
                 </section>
             </main>
         );
@@ -67,7 +67,7 @@ export function RaffleDetailPage({ raffleId }: RaffleDetailPageProps) {
         <main className={styles.page}>
             <section className={styles.detailShell} aria-labelledby="raffle-detail-title">
                 <header className={styles.topBar}>
-                    <a href={routes.raffles} aria-label="Volver a rifas">‹</a>
+                    <a href={routes.raffles} aria-label="Volver a sorteos">‹</a>
                     <strong>Detalle del sorteo</strong>
                     <button type="button" aria-label="Compartir sorteo">⌯</button>
                 </header>
@@ -150,7 +150,7 @@ export function RaffleDetailPage({ raffleId }: RaffleDetailPageProps) {
 
             <section className={styles.relatedPanel} aria-labelledby="related-raffles-title">
                 <div className={styles.relatedHeader}>
-                    <h2 id="related-raffles-title">Más rifas activas</h2>
+                    <h2 id="related-raffles-title">Más sorteos activos</h2>
                     <a href={routes.raffles}>Ver todo</a>
                 </div>
                 <div className={styles.relatedGrid}>

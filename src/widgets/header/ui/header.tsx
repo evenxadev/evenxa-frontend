@@ -9,7 +9,7 @@ import styles from "./header.module.css";
 const navLinks = [
     { label: "Inicio", href: routes.home },
     { label: "Eventos", href: routes.events },
-    { label: "Rifas", href: routes.raffles, featured: true },
+    { label: "Sorteos", href: routes.raffles, featured: true },
     { label: "Categorías", href: routes.categories },
 ];
 
